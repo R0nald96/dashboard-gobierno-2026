@@ -277,8 +277,8 @@ function render(){
   document.getElementById('tEquipo').innerHTML=he;
 
   document.getElementById('estadoList').innerHTML=rows.map(c=>{
-    const cls=c.estado==='Cerrado'?'bc':c.aprobado===false?'bd':'bo';
-    const etq=c.aprobado===false?'Desaprobado':c.estado;
+    const cls=c.estado==='Cerrado'?'bc':'bo';
+    const etq=c.estado;
     return `<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:.5px solid rgba(0,0,0,.08)">
       <span style="font-size:12px;font-weight:500">${c.n}</span><span class="badge ${cls}">${etq}</span></div>`;
   }).join('')+`<div style="margin-top:8px;font-size:11px;color:#888">Total: ${rows.length} auditados</div>`;
