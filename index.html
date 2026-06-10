@@ -187,7 +187,10 @@ function buildClientes(rows){
   const dataRows = rows.slice(7).filter(r=>r[1]&&r[1].trim()&&r[1].trim()!=='Cliente');
   return dataRows.map(r=>{
     const procs={};
-    PROC_KEYS.forEach((k,i)=>{ procs[k]=(r[PROC_COLS[i]]||'A').trim()||'A'; });
+    PROC_KEYS.forEach((k,i)=>{ 
+      const raw=(r[PROC_COLS[i]]||'').trim();
+      procs[k]=raw||'A';
+    });
     const pctRaw = parseFloat((r[13]||'0').replace(',','.'));
     const resultadoVal = (r[14]||'').trim();
     const aprobado = resultadoVal === 'Aprobado' || resultadoVal === 'Aprobado ';
@@ -212,9 +215,9 @@ function buildClientes(rows){
 }
 
 function isVencido(c){ return c.fechaVenc && c.fechaVenc < TODAY && c.estado !== 'Cerrado'; }
-function isPend(v){ return v&&v.endsWith('-P'); }
-function isRes(v){ return v&&v.endsWith('-R'); }
-function equipo(v){ if(!v||v==='A'||v==='Audit.')return null; return v.replace(/-[PR]$/,''); }
+function isPend(v){ return v&&v.trim().endsWith('-P'); }
+function isRes(v){ return v&&v.trim().endsWith('-R'); }
+function equipo(v){ if(!v)return null; const t=v.trim(); if(t==='A'||t==='Audit.'||t==='')return null; return t.replace(/-[PR]$/,''); }
 
 function calcEquipos(rows){
   const eq={};EQUIPOS_KEY.forEach(e=>{eq[e]={pend:0,res:0};});
