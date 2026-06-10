@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard Gobierno de Operaciones 2026 — Seidor Technologies</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f5f3;color:#1a1a19;min-height:100vh;padding:24px 16px}
+.container{max-width:960px;margin:0 auto}
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:1.5rem}
+.kpi{background:#fff;border-radius:8px;padding:14px 16px;border:.5px solid rgba(0,0,0,.1)}
+.kpi-label{font-size:11px;color:#888;margin:0 0 2px;text-transform:uppercase;letter-spacing:.04em}
+.kpi-sub{font-size:11px;color:#888;margin:4px 0 0}
+.kpi-val{font-size:26px;font-weight:500;margin:0;line-height:1.1;color:#1a1a19}
+.kpi-val.danger{color:#A32D2D}.kpi-val.success{color:#0F6E56}.kpi-val.info{color:#185FA5}
+.sec{font-size:12px;font-weight:500;color:#888;text-transform:uppercase;letter-spacing:.05em;margin:0 0 10px}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:1.25rem}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:1.25rem}
+.card{background:#fff;border:.5px solid rgba(0,0,0,.1);border-radius:12px;padding:16px 18px;margin-bottom:1.25rem}
+.card:last-child{margin-bottom:0}
+table.dt{width:100%;border-collapse:collapse;font-size:12px}
+table.dt th{color:#888;font-weight:500;padding:5px 6px;border-bottom:.5px solid rgba(0,0,0,.1);text-align:left}
+table.dt td{padding:6px 6px;border-bottom:.5px solid rgba(0,0,0,.08);color:#1a1a19}
+table.dt tr:last-child td{border-bottom:none}
+table.dt .num{text-align:right;font-variant-numeric:tabular-nums}
+.badge{display:inline-block;font-size:11px;font-weight:500;padding:2px 9px;border-radius:20px}
+.bo{background:#E6F1FB;color:#185FA5}.bc{background:#E1F5EE;color:#0F6E56}.bd{background:#FCEBEB;color:#A32D2D}
+.ba{background:#E1F5EE;color:#0F6E56}.bd2{background:#FCEBEB;color:#A32D2D}
+.slc{display:flex;gap:6px;margin-bottom:1.25rem;flex-wrap:wrap}
+.slc button{font-size:12px;padding:5px 14px;border:.5px solid rgba(0,0,0,.2);border-radius:20px;background:#fff;color:#666;cursor:pointer;transition:all .15s}
+.slc button:hover{background:#f0f0ee}
+.slc button.act{background:#E6F1FB;color:#185FA5;border-color:transparent}
+.tab-btns{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+.tab-btn{font-size:12px;padding:5px 14px;border:.5px solid rgba(0,0,0,.2);border-radius:20px;background:#fff;color:#666;cursor:pointer;transition:all .15s}
+.tab-btn:hover{background:#f0f0ee}
+.tab-btn.act{background:#E6F1FB;color:#185FA5;border-color:transparent}
+.hdr{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1.5rem;flex-wrap:wrap;gap:10px}
+.hdr-meta{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.brand-tag{font-size:11px;color:#888;background:#f0f0ee;padding:3px 10px;border-radius:20px}
+.yr-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:1.25rem}
+.yr-card{background:#f5f5f3;border-radius:8px;padding:12px 14px}
+.yr-label{font-size:11px;font-weight:600;color:#666;text-transform:uppercase;letter-spacing:.05em;margin:0 0 8px}
+.stat-row{display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:.5px solid rgba(0,0,0,.08)}
+.stat-row:last-of-type{border-bottom:none}
+.bar-wrap{margin:6px 0 2px;height:7px;background:#e8e8e6;border-radius:4px;overflow:hidden;display:flex}
+.bar-a{background:#5DCAA5;height:100%}
+.bar-d{background:#F09595;height:100%}
+.divider{height:.5px;background:rgba(0,0,0,.08);margin:1.5rem 0}
+@media(max-width:600px){.grid-3,.yr-grid,.grid-2{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="hdr">
+  <div>
+    <div style="font-size:11px;color:#888;margin-bottom:3px;">SEIDOR TECHNOLOGIES · GOBIERNO DE OPERACIONES</div>
+    <div style="font-size:22px;font-weight:500;color:#1a1a19;">Dashboard de seguimiento — 2026</div>
+  </div>
+  <div class="hdr-meta">
+    <span class="brand-tag">Fuente: Seguimiento_Gobierno 2026</span>
+    <span class="brand-tag" id="hdr-fecha"></span>
+  </div>
+</div>
+
+<div class="slc">
+  <button class="act" onclick="fil(this,'ALL')">Todos</button>
+  <button onclick="fil(this,'P1')">Prioridad 1</button>
+  <button onclick="fil(this,'P2')">Prioridad 2</button>
+  <button onclick="fil(this,'En Proceso')">En Proceso</button>
+  <button onclick="fil(this,'Cerrado')">Cerrado</button>
+</div>
+
+<div class="kpi-grid" id="kpiGrid"></div>
+
+<div class="grid-3">
+  <div class="card" style="margin-bottom:0">
+    <div class="sec">Pendientes por cliente</div>
+    <table class="dt" id="tCliente"></table>
+  </div>
+  <div class="card" style="margin-bottom:0">
+    <div class="sec">Pendientes por equipo</div>
+    <table class="dt" id="tEquipo"></table>
+  </div>
+  <div class="card" style="margin-bottom:0">
+    <div class="sec">Estado de auditorías</div>
+    <div id="estadoList" style="display:flex;flex-direction:column;gap:6px;"></div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<div class="card">
+  <div class="sec" style="margin-bottom:10px">Pendientes por equipo y tipo de gestión</div>
+  <div style="overflow-x:auto">
+    <table class="dt" id="tGestion" style="min-width:480px"></table>
+  </div>
+</div>
+
+<div class="grid-2">
+  <div class="card" style="margin-bottom:0">
+    <div class="sec" style="margin-bottom:10px">Histórico de auditorías por año</div>
+    <div style="display:flex;gap:10px;margin-bottom:8px;font-size:11px;color:#888;flex-wrap:wrap">
+      <span style="display:flex;align-items:center;gap:4px"><span style="width:9px;height:9px;border-radius:2px;background:#888780;display:inline-block"></span>2021–2023</span>
+      <span style="display:flex;align-items:center;gap:4px"><span style="width:9px;height:9px;border-radius:2px;background:#378ADD;display:inline-block"></span>2024–2025</span>
+      <span style="display:flex;align-items:center;gap:4px"><span style="width:9px;height:9px;border-radius:2px;background:#E24B4A;display:inline-block"></span>2026</span>
+    </div>
+    <div style="position:relative;width:100%;height:200px">
+      <canvas id="histChart"></canvas>
+    </div>
+    <div style="font-size:11px;color:#888;text-align:right;margin-top:6px">Datos a junio 2026</div>
+  </div>
+  <div class="card" style="margin-bottom:0">
+    <div class="sec" style="margin-bottom:10px">Aprobados vs desaprobados por año</div>
+    <div style="display:flex;gap:10px;margin-bottom:8px;font-size:11px;color:#888">
+      <span style="display:flex;align-items:center;gap:4px"><span style="width:9px;height:9px;border-radius:2px;background:#5DCAA5;display:inline-block"></span>Aprobados</span>
+      <span style="display:flex;align-items:center;gap:4px"><span style="width:9px;height:9px;border-radius:2px;background:#F09595;display:inline-block"></span>Desaprobados</span>
+    </div>
+    <div style="position:relative;width:100%;height:200px">
+      <canvas id="trendChart"></canvas>
+    </div>
+    <div style="font-size:11px;color:#888;text-align:right;margin-top:6px">Umbral de aprobación: 75%</div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<div class="card">
+  <div class="sec" style="margin-bottom:4px">Comparativo de aprobación — 2024 al 2026</div>
+  <div style="font-size:12px;color:#888;margin-bottom:14px">Resultado por cliente vs umbral del 75%</div>
+  <div class="yr-grid" id="yrCards"></div>
+  <div class="tab-btns">
+    <button class="tab-btn act" onclick="showTab(this,'2024')">2024 · 24 auditorías</button>
+    <button class="tab-btn" onclick="showTab(this,'2025')">2025 · 8 auditorías</button>
+    <button class="tab-btn" onclick="showTab(this,'2026')">2026 · 4 auditorías</button>
+  </div>
+  <div id="tabDetalle"></div>
+</div>
+
+</div><!-- /container -->
+
+<script>
+const TODAY = new Date();
+document.getElementById('hdr-fecha').textContent = TODAY.toLocaleDateString('es-PE',{day:'2-digit',month:'short',year:'numeric'});
+
+const CLIENTES = [
+  { n:'CRUZ DEL SUR', pr:2, aprobado:true,  estado:'En Proceso', fechaVenc:new Date('2026-05-18'),
+    procs:{GCap:'A',PEnc:'A',GMon:'A',GBack:'A',Ant:'INFRA-P',GInc:'A',GSol:'A',GCam:'A',CalSAP:'BASIS-P',InfM:'A'} },
+  { n:'TOYOTA',       pr:1, aprobado:true,  estado:'Cerrado',    fechaVenc:new Date('2026-05-25'),
+    procs:{GCap:'SM-R',PEnc:'A',GMon:'A',GBack:'INFRA-R',Ant:'A',GInc:'A',GSol:'A',GCam:'A',CalSAP:'BASIS-R',InfM:'A'} },
+  { n:'PANORAMA',     pr:2, aprobado:true,  estado:'En Proceso', fechaVenc:new Date('2026-06-05'),
+    procs:{GCap:'A',PEnc:'A',GMon:'A',GBack:'A',Ant:'A',GInc:'A',GSol:'A',GCam:'A',CalSAP:'BASIS-P',InfM:'A'} },
+  { n:'OSINERGMIN',   pr:1, aprobado:false, estado:'En Proceso', fechaVenc:new Date('2026-06-11'),
+    procs:{GCap:'SM-P',PEnc:'A',GMon:'INFRA-P',GBack:'BASIS-P',Ant:'INFRA-P',GInc:'A',GSol:'A',GCam:'A',CalSAP:'BASIS-P',InfM:'SM-P'} },
+];
+
+const APROBACION = {
+  '2024':{ total:24,
+    aprobados:[{n:'BANCO RIPLEY',pct:.89},{n:'AUNA',pct:1},{n:'FUXION PERÚ',pct:.81},{n:'PANORAMA',pct:.78},{n:'PARDOS CHICKEN',pct:.75},{n:'QUIMICOS GOICOCHEA',pct:.78},{n:'SICA',pct:.78},{n:'EURORENTING',pct:.83},{n:'VAINSA',pct:.83},{n:'HIVIMAR',pct:.75},{n:'METALPREN',pct:.83},{n:'PICA',pct:.78},{n:'TECNOFIL',pct:.83},{n:'SERVIENTREGA',pct:.78}],
+    desaprobados:[{n:'LATINA',pct:.64},{n:'MB RENTING',pct:.69},{n:'MPF',pct:.61},{n:'SAN MARTIN',pct:.72},{n:'PLATANITOS',pct:.72},{n:'SOLE',pct:.72},{n:'ACEROS CHILCA',pct:.61},{n:'DECOR',pct:.56},{n:'LA CALERA',pct:.72},{n:'MAQUINARIAS',pct:.64}]},
+  '2025':{ total:8,
+    aprobados:[{n:'TOYOTA',pct:.92},{n:'TALSA',pct:.94},{n:'YAWI',pct:.84}],
+    desaprobados:[{n:'LA CALERA',pct:.61},{n:'MARATHON ECUADOR',pct:.69},{n:'MISSION PRODUCE',pct:.64},{n:'COGA (TGP)',pct:.64},{n:'PANORAMA',pct:.69}]},
+  '2026':{ total:4,
+    aprobados:[{n:'CRUZ DEL SUR',pct:.78},{n:'TOYOTA',pct:.78},{n:'PANORAMA',pct:.78}],
+    desaprobados:[{n:'OSINERGMIN',pct:.67}]}
+};
+
+const PROC_KEYS  = ['GCap','PEnc','GMon','GBack','Ant','GInc','GSol','GCam','CalSAP','InfM'];
+const PROC_LABEL = ['G.Cap','P.Enc','G.Mon','G.Back','Ant.','G.Inc','G.Sol','G.Cam','Cal.SAP','Inf.M'];
+const EQUIPOS_KEY = ['SM','INFRA','BASIS','COP'];
+
+function isVencido(c){ return c.fechaVenc < TODAY && c.estado !== 'Cerrado'; }
+function isPend(v){ return v&&v.endsWith('-P'); }
+function isRes(v){ return v&&v.endsWith('-R'); }
+function equipo(v){ if(!v||v==='A')return null; return v.replace(/-[PR]$/,''); }
+
+function calcEquipos(rows){
+  const eq={};
+  EQUIPOS_KEY.forEach(e=>{eq[e]={pend:0,res:0};});
+  rows.forEach(c=>{ PROC_KEYS.forEach(k=>{ const v=c.procs[k],e=equipo(v); if(e&&eq[e]){if(isPend(v))eq[e].pend++;if(isRes(v))eq[e].res++;} }); });
+  return eq;
+}
+function calcGestion(rows){
+  const mat={};
+  EQUIPOS_KEY.forEach(e=>{mat[e]={};PROC_KEYS.forEach(k=>{mat[e][k]=0;});});
+  rows.forEach(c=>{ PROC_KEYS.forEach(k=>{ const v=c.procs[k],e=equipo(v); if(e&&mat[e]&&isPend(v))mat[e][k]++; }); });
+  return mat;
+}
+function calcClientePend(c){
+  const byEq={SM:0,INFRA:0,BASIS:0,COP:0};
+  PROC_KEYS.forEach(k=>{ const v=c.procs[k],e=equipo(v); if(e&&byEq[e]!==undefined&&isPend(v))byEq[e]++; });
+  return {...byEq, total:Object.values(byEq).reduce((s,x)=>s+x,0)};
+}
+
+let filtro='ALL';
+function fil(btn,val){ filtro=val; document.querySelectorAll('.slc button').forEach(b=>b.classList.remove('act')); btn.classList.add('act'); render(); }
+function getRows(){ if(filtro==='P1')return CLIENTES.filter(c=>c.pr===1); if(filtro==='P2')return CLIENTES.filter(c=>c.pr===2); if(filtro==='En Proceso')return CLIENTES.filter(c=>c.estado==='En Proceso'); if(filtro==='Cerrado')return CLIENTES.filter(c=>c.estado==='Cerrado'); return CLIENTES; }
+
+function render(){
+  const rows=getRows(), eq=calcEquipos(rows), mat=calcGestion(rows);
+  const totPend=Object.values(eq).reduce((s,e)=>s+e.pend,0);
+  const totRes=Object.values(eq).reduce((s,e)=>s+e.res,0);
+  const totSin=rows.reduce((s,c)=>s+PROC_KEYS.filter(k=>c.procs[k]==='A').length,0);
+  const totVenc=rows.filter(c=>isVencido(c)).length;
+
+  document.getElementById('kpiGrid').innerHTML=`
+    <div class="kpi"><p class="kpi-label">Clientes auditados</p><p class="kpi-val info">${rows.length}</p><p class="kpi-sub">2026 a la fecha</p></div>
+    <div class="kpi"><p class="kpi-label">Pendientes</p><p class="kpi-val ${totPend>0?'danger':''}">${totPend}</p><p class="kpi-sub">por equipo</p></div>
+    <div class="kpi"><p class="kpi-label">Total resueltos</p><p class="kpi-val success">${totRes}</p><p class="kpi-sub">acciones cerradas</p></div>
+    <div class="kpi"><p class="kpi-label">Fechas vencidas</p><p class="kpi-val ${totVenc>0?'danger':''}">${totVenc}</p></div>
+    <div class="kpi"><p class="kpi-label">Sin observaciones</p><p class="kpi-val">${totSin}</p><p class="kpi-sub">gestiones OK</p></div>`;
+
+  let h=`<thead><tr><th>Cliente</th><th class="num">SM</th><th class="num">INFRA</th><th class="num">BASIS</th><th class="num">Total</th></tr></thead><tbody>`;
+  [...rows].sort((a,b)=>calcClientePend(b).total-calcClientePend(a).total).forEach(c=>{
+    const p=calcClientePend(c);
+    h+=`<tr><td style="font-weight:500">${c.n}</td>
+      <td class="num" style="color:${p.SM>0?'#A32D2D':'#1a1a19'}">${p.SM}</td>
+      <td class="num" style="color:${p.INFRA>0?'#A32D2D':'#1a1a19'}">${p.INFRA}</td>
+      <td class="num" style="color:${p.BASIS>0?'#A32D2D':'#1a1a19'}">${p.BASIS}</td>
+      <td class="num" style="font-weight:500;color:${p.total>0?'#A32D2D':'#0F6E56'}">${p.total}</td></tr>`;
+  });
+  document.getElementById('tCliente').innerHTML=h+'</tbody>';
+
+  let he=`<thead><tr><th>Equipo</th><th class="num">Pendientes</th><th class="num">Resueltos</th></tr></thead><tbody>`;
+  EQUIPOS_KEY.forEach(e=>{
+    he+=`<tr><td style="font-weight:500">${e}</td>
+      <td class="num" style="color:${eq[e].pend>0?'#A32D2D':'#888'};font-weight:${eq[e].pend>0?'500':'400'}">${eq[e].pend}</td>
+      <td class="num" style="color:${eq[e].res>0?'#0F6E56':'#888'}">${eq[e].res}</td></tr>`;
+  });
+  const tp=Object.values(eq).reduce((s,e)=>s+e.pend,0),tr2=Object.values(eq).reduce((s,e)=>s+e.res,0);
+  he+=`<tr style="border-top:.5px solid rgba(0,0,0,.12)"><td style="font-weight:500">Total</td>
+    <td class="num" style="font-weight:500;color:#A32D2D">${tp}</td>
+    <td class="num" style="font-weight:500;color:#0F6E56">${tr2}</td></tr></tbody>`;
+  document.getElementById('tEquipo').innerHTML=he;
+
+  document.getElementById('estadoList').innerHTML=rows.map(c=>{
+    const cls=c.estado==='Cerrado'?'bc':c.aprobado===false?'bd':'bo';
+    const etq=c.aprobado===false?'Desaprobado':c.estado;
+    return `<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:.5px solid rgba(0,0,0,.08)">
+      <span style="font-size:12px;font-weight:500">${c.n}</span><span class="badge ${cls}">${etq}</span></div>`;
+  }).join('')+`<div style="margin-top:8px;font-size:11px;color:#888">Total: ${rows.length} auditados</div>`;
+
+  const activeEq=EQUIPOS_KEY.filter(e=>Object.values(mat[e]).some(v=>v>0));
+  const headers=['Equipo',...PROC_LABEL,'Total'];
+  let hg=`<thead><tr>${headers.map((h,i)=>`<th${i>0?' class="num"':''}>${h}</th>`).join('')}</tr></thead><tbody>`;
+  const totalsRow={};PROC_KEYS.forEach(k=>{totalsRow[k]=0;});let grandTotal=0;
+  activeEq.forEach(e=>{
+    const rowTotal=PROC_KEYS.reduce((s,k)=>s+mat[e][k],0);grandTotal+=rowTotal;PROC_KEYS.forEach(k=>{totalsRow[k]+=mat[e][k];});
+    hg+=`<tr><td style="font-weight:500">${e}</td>
+      ${PROC_KEYS.map(k=>`<td class="num" style="color:${mat[e][k]>0?'#A32D2D':'#bbb'}">${mat[e][k]>0?mat[e][k]:'—'}</td>`).join('')}
+      <td class="num" style="font-weight:500;color:#A32D2D">${rowTotal}</td></tr>`;
+  });
+  hg+=`<tr style="border-top:.5px solid rgba(0,0,0,.12)"><td style="font-weight:500">Total</td>
+    ${PROC_KEYS.map(k=>`<td class="num" style="font-weight:500;color:${totalsRow[k]>0?'#A32D2D':'#bbb'}">${totalsRow[k]>0?totalsRow[k]:'—'}</td>`).join('')}
+    <td class="num" style="font-weight:500;color:#A32D2D">${grandTotal}</td></tr></tbody>`;
+  document.getElementById('tGestion').innerHTML=hg;
+}
+
+// Tarjetas comparativo
+document.getElementById('yrCards').innerHTML=['2024','2025','2026'].map(yr=>{
+  const d=APROBACION[yr];
+  const na=d.aprobados.length,nd=d.desaprobados.length;
+  const pctA=Math.round(na/d.total*100),pctD=Math.round(nd/d.total*100);
+  const avgA=na>0?Math.round(d.aprobados.reduce((s,x)=>s+x.pct,0)/na*100):0;
+  const avgD=nd>0?Math.round(d.desaprobados.reduce((s,x)=>s+x.pct,0)/nd*100):0;
+  return `<div class="yr-card">
+    <div class="yr-label">${yr}</div>
+    <div class="stat-row"><span style="font-size:12px">Aprobados</span><span style="font-size:14px;font-weight:500;color:#0F6E56">${na}</span></div>
+    <div class="stat-row"><span style="font-size:12px">Desaprobados</span><span style="font-size:14px;font-weight:500;color:#A32D2D">${nd}</span></div>
+    <div class="bar-wrap"><div class="bar-a" style="width:${pctA}%"></div><div class="bar-d" style="width:${pctD}%"></div></div>
+    <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:6px"><span style="color:#0F6E56">${pctA}%</span><span style="color:#A32D2D">${pctD}%</span></div>
+    <div class="stat-row"><span style="font-size:11px;color:#888">Prom. aprobados</span><span style="font-size:12px;font-weight:500;color:#0F6E56">${avgA}%</span></div>
+    <div class="stat-row"><span style="font-size:11px;color:#888">Prom. desaprobados</span><span style="font-size:12px;font-weight:500;color:#A32D2D">${avgD}%</span></div>
+    <div style="margin-top:6px;font-size:11px;color:#888">${d.total} auditorías</div>
+  </div>`;
+}).join('');
+
+function showTab(btn,yr){
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('act'));
+  btn.classList.add('act');
+  const d=APROBACION[yr];
+  const all=[...d.aprobados.map(x=>({...x,estado:'Aprobado'})),...d.desaprobados.map(x=>({...x,estado:'Desaprobado'}))].sort((a,b)=>b.pct-a.pct);
+  let h=`<table class="dt"><thead><tr><th>Cliente</th><th>Resultado</th><th class="num">% Obtenido</th><th class="num">Dist. al 75%</th></tr></thead><tbody>`;
+  all.forEach(r=>{
+    const pct=Math.round(r.pct*100),dist=pct-75;
+    h+=`<tr><td style="font-weight:500">${r.n}</td>
+      <td><span class="badge ${r.estado==='Aprobado'?'ba':'bd2'}">${r.estado}</span></td>
+      <td class="num">${pct}%</td>
+      <td class="num" style="font-weight:500;color:${dist>=0?'#0F6E56':'#A32D2D'}">${dist>=0?'+':''}${dist}pp</td></tr>`;
+  });
+  document.getElementById('tabDetalle').innerHTML=h+'</tbody></table>';
+}
+showTab(document.querySelector('.tab-btn.act'),'2024');
+
+// Gráfico histórico
+new Chart(document.getElementById('histChart').getContext('2d'),{
+  type:'bar',
+  data:{labels:['2021','2022','2023','2024','2025','2026'],
+    datasets:[{data:[6,19,10,24,8,4],backgroundColor:['#888780','#888780','#888780','#378ADD','#378ADD','#E24B4A'],borderRadius:3,borderWidth:0}]},
+  options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${c.raw} auditorías`}}},
+    scales:{x:{grid:{color:'rgba(0,0,0,.06)'},ticks:{font:{size:10}},max:28},y:{grid:{display:false},ticks:{font:{size:11},color:'#666'}}}},
+  plugins:[{afterDraw(chart){
+    const{ctx:c,data,scales:{x,y}}=chart;
+    data.datasets[0].data.forEach((val,i)=>{
+      c.fillStyle='#666';c.font='500 11px sans-serif';c.textAlign='left';
+      c.fillText(val,x.getPixelForValue(val)+5,y.getPixelForValue(i)+4);
+    });
+  }}]
+});
+
+// Gráfico aprobados vs desaprobados
+new Chart(document.getElementById('trendChart').getContext('2d'),{
+  type:'bar',
+  data:{labels:['2024','2025','2026'],
+    datasets:[
+      {label:'Aprobados',   data:[14,3,3],backgroundColor:'#5DCAA5',borderRadius:3,borderWidth:0},
+      {label:'Desaprobados',data:[10,5,1],backgroundColor:'#F09595',borderRadius:3,borderWidth:0}
+    ]},
+  options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false},tooltip:{mode:'index',intersect:false}},
+    scales:{x:{grid:{display:false},ticks:{font:{size:11}}},y:{grid:{color:'rgba(0,0,0,.06)'},ticks:{stepSize:2,font:{size:10}},beginAtZero:true}}},
+  plugins:[{afterDraw(chart){
+    const{ctx:c,data,scales:{x,y}}=chart;
+    data.datasets.forEach((ds,di)=>{
+      ds.data.forEach((val,i)=>{
+        if(!val)return;
+        const bar=chart.getDatasetMeta(di).data[i];
+        c.fillStyle=di===0?'#085041':'#7B1D1D';c.font='500 11px sans-serif';c.textAlign='center';
+        c.fillText(val,bar.x,bar.y-5);
+      });
+    });
+  }}]
+});
+
+render();
+</script>
+</body>
+</html>
