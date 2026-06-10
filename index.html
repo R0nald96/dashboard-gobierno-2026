@@ -194,11 +194,18 @@ function buildClientes(rows){
     const pctRaw = parseFloat((r[13]||'0').replace(',','.'));
     const resultadoVal = (r[14]||'').trim();
     const aprobado = resultadoVal === 'Aprobado' || resultadoVal === 'Aprobado ';
-    const fechaVencStr = r[12]||'';
+    const fechaVencStr = (r[12]||'').trim();
     let fechaVenc = null;
     if(fechaVencStr && fechaVencStr.length>4){
-      const d=new Date(fechaVencStr);
-      if(!isNaN(d)) fechaVenc=d;
+      let d = new Date(fechaVencStr);
+      if(isNaN(d)){
+        const parts = fechaVencStr.split('/');
+        if(parts.length===3){
+          // Intentar DD/MM/YYYY
+          d = new Date(parts[2]+'-'+parts[1].padStart(2,'0')+'-'+parts[0].padStart(2,'0'));
+        }
+      }
+      if(!isNaN(d)){ d.setHours(0,0,0,0); fechaVenc=d; }
     }
     // pct puede venir como 0.78 o como 78 dependiendo del formato del CSV
     const pct = pctRaw > 1 ? pctRaw / 100 : pctRaw;
@@ -214,7 +221,11 @@ function buildClientes(rows){
   }).filter(c=>c.n);
 }
 
-function isVencido(c){ return c.fechaVenc && c.fechaVenc < TODAY && c.estado !== 'Cerrado'; }
+function isVencido(c){ 
+  if(!c.fechaVenc || c.estado==='Cerrado') return false;
+  const hoy = new Date(); hoy.setHours(0,0,0,0);
+  return c.fechaVenc <= hoy;
+}
 function isPend(v){ return v&&v.trim().endsWith('-P'); }
 function isRes(v){ return v&&v.trim().endsWith('-R'); }
 function equipo(v){ if(!v)return null; const t=v.trim(); if(t==='A'||t==='Audit.'||t==='')return null; return t.replace(/-[PR]$/,''); }
@@ -402,6 +413,12 @@ fetch(CSV_URL)
   .then(text=>{
     const rows = parseCSV(text);
     CLIENTES = buildClientes(rows);
+    // DEBUG: mostrar valores crudos de procesos
+    const debugRows = rows.slice(7,12);
+    debugRows.forEach((r,i)=>{
+      const vals = [15,16,17,18,19,20,21,22,23,24].map(c=>`[${c}]=${JSON.stringify(r[c]||'')}`).join(' ');
+      console.log(`Fila ${7+i} Cliente=${r[1]} Procs: ${vals}`);
+    });
     document.getElementById('loadingState').style.display='none';
     document.getElementById('mainContent').style.display='block';
     render();
