@@ -196,13 +196,15 @@ function buildClientes(rows){
       const d=new Date(fechaVencStr);
       if(!isNaN(d)) fechaVenc=d;
     }
+    // pct puede venir como 0.78 o como 78 dependiendo del formato del CSV
+    const pct = pctRaw > 1 ? pctRaw / 100 : pctRaw;
     return {
       n: r[1].trim(),
       pr: parseInt(r[3])||2,
       aprobado,
       estado: (r[31]||'En Proceso').trim(),
       fechaVenc,
-      pct: pctRaw,
+      pct,
       procs
     };
   }).filter(c=>c.n);
