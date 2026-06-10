@@ -197,13 +197,14 @@ function buildClientes(rows){
     const fechaVencStr = (r[12]||'').trim();
     let fechaVenc = null;
     if(fechaVencStr && fechaVencStr.length>4){
-      let d = new Date(fechaVencStr);
-      if(isNaN(d)){
-        const parts = fechaVencStr.split('/');
-        if(parts.length===3){
-          // Intentar DD/MM/YYYY
-          d = new Date(parts[2]+'-'+parts[1].padStart(2,'0')+'-'+parts[0].padStart(2,'0'));
-        }
+      // Formato DD/MM/YYYY desde Google Sheets
+      const parts = fechaVencStr.split('/');
+      let d;
+      if(parts.length===3){
+        // DD/MM/YYYY → YYYY-MM-DD
+        d = new Date(parts[2]+'-'+parts[1].padStart(2,'0')+'-'+parts[0].padStart(2,'0'));
+      } else {
+        d = new Date(fechaVencStr);
       }
       if(!isNaN(d)){ d.setHours(0,0,0,0); fechaVenc=d; }
     }
@@ -413,12 +414,6 @@ fetch(CSV_URL)
   .then(text=>{
     const rows = parseCSV(text);
     CLIENTES = buildClientes(rows);
-    // DEBUG: mostrar valores crudos de procesos
-    const debugRows = rows.slice(7,12);
-    debugRows.forEach((r,i)=>{
-      const vals = [15,16,17,18,19,20,21,22,23,24].map(c=>`[${c}]=${JSON.stringify(r[c]||'')}`).join(' ');
-      console.log(`Fila ${7+i} Cliente=${r[1]} Procs: ${vals}`);
-    });
     document.getElementById('loadingState').style.display='none';
     document.getElementById('mainContent').style.display='block';
     render();
