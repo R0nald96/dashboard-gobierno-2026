@@ -192,8 +192,8 @@ function buildClientes(rows){
       procs[k]=raw||'A';
     });
     const pctRaw = parseFloat((r[13]||'0').replace(',','.'));
-    const resultadoVal = (r[14]||'').trim();
-    const aprobado = resultadoVal === 'Aprobado' || resultadoVal === 'Aprobado ';
+    const resultadoVal = (r[14]||'').trim().toLowerCase();
+    const aprobado = resultadoVal === 'aprobado';
     const fechaVencStr = (r[12]||'').trim();
     let fechaVenc = null;
     if(fechaVencStr && fechaVencStr.length>4){
