@@ -184,7 +184,7 @@ function parseCSV(text){
 
 function buildClientes(rows){
   // header en fila index 5 (0-based), datos desde fila 7
-  const dataRows = rows.slice(7).filter(r=>r[1]&&r[1].trim()&&r[1].trim()!=='Cliente');
+  const dataRows = rows.slice(7).filter(r=>r[0]&&r[0].trim()&&!isNaN(parseInt(r[0].trim()))&&r[1]&&r[1].trim()&&r[1].trim()!=='Cliente');
   return dataRows.map(r=>{
     const procs={};
     PROC_KEYS.forEach((k,i)=>{ 
