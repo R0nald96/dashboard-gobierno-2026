@@ -435,8 +435,8 @@ function buildObsChart(){
   data.forEach(r=>{
     const pctRes  = r.total>0 ? Math.round(r.res/r.total*100)  : 0;
     const pctPend = r.total>0 ? Math.round(r.pend/r.total*100) : 0;
-    const barRes  = Math.round(r.res/maxTotal*100);
-    const barPend = Math.round(r.pend/maxTotal*100);
+    const barRes  = pctRes;
+    const barPend = pctPend;
 
     let badges = '';
     PROC_KEYS.forEach((k,i)=>{
