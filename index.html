@@ -105,15 +105,13 @@ table.dt .num{text-align:right;font-variant-numeric:tabular-nums}
     </div>
   </div>
 
-  <div class="card">
-    <div class="sec" style="margin-bottom:10px">Observaciones por cliente — Resueltas vs Pendientes</div>
-    <div style="display:flex;gap:10px;margin-bottom:10px;font-size:12px;color:#888;flex-wrap:wrap">
+  <div class="card" id="obsCard">
+    <div class="sec" style="margin-bottom:4px">Observaciones por cliente — Resueltas vs Pendientes</div>
+    <div style="display:flex;gap:14px;margin-bottom:14px;font-size:12px;color:#888">
       <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;border-radius:2px;background:#5DCAA5;display:inline-block"></span>Resueltas</span>
       <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;border-radius:2px;background:#F09595;display:inline-block"></span>Pendientes</span>
     </div>
-    <div style="position:relative;width:100%;height:220px">
-      <canvas id="obsChart" role="img" aria-label="Gráfico de barras apiladas de observaciones por cliente"></canvas>
-    </div>
+    <div id="obsProgressTable"></div>
   </div>
 
   <div class="grid-2">
@@ -422,52 +420,46 @@ function buildCharts(){
 }
 
 function buildObsChart(){
-  const labels = CLIENTES.map(c=>c.n);
-  const resueltos = CLIENTES.map(c=>{
-    return PROC_KEYS.reduce((s,k)=>s+(isRes(c.procs[k])?1:0),0);
-  });
-  const pendientes = CLIENTES.map(c=>{
-    return PROC_KEYS.reduce((s,k)=>s+(isPend(c.procs[k])?1:0),0);
-  });
+  const container = document.getElementById('obsProgressTable');
+  if(!container) return;
 
-  if(window._obsChart) window._obsChart.destroy();
-  const ctx = document.getElementById('obsChart').getContext('2d');
-  window._obsChart = new Chart(ctx,{
-    type:'bar',
-    data:{
-      labels,
-      datasets:[
-        {label:'Resueltas', data:resueltos, backgroundColor:'#5DCAA5', borderRadius:0, borderWidth:0},
-        {label:'Pendientes', data:pendientes, backgroundColor:'#F09595', borderRadius:3, borderWidth:0}
-      ]
-    },
-    options:{
-      responsive:true, maintainAspectRatio:false,
-      plugins:{
-        legend:{display:false},
-        tooltip:{
-          mode:'index', intersect:false,
-          callbacks:{
-            footer:(items)=>`Total: ${items.reduce((s,i)=>s+i.raw,0)} observaciones`
-          }
-        }
-      },
-      scales:{
-        x:{stacked:true, grid:{display:false}, ticks:{font:{size:11}}},
-        y:{stacked:true, grid:{color:'rgba(0,0,0,.06)'}, ticks:{stepSize:1,font:{size:11}}, beginAtZero:true}
-      }
-    },
-    plugins:[{afterDraw(chart){
-      const{ctx:c,data,scales:{x,y}}=chart;
-      data.labels.forEach((_,i)=>{
-        const res=data.datasets[0].data[i], pend=data.datasets[1].data[i], total=res+pend;
-        if(!total) return;
-        const bar=chart.getDatasetMeta(1).data[i];
-        c.fillStyle='#444'; c.font='500 11px sans-serif'; c.textAlign='center';
-        c.fillText(total, bar.x, bar.y-6);
-      });
-    }}]
-  });
+  const rows = CLIENTES.map(c=>{
+    const res = PROC_KEYS.reduce((s,k)=>s+(isRes(c.procs[k])?1:0),0);
+    const pend = PROC_KEYS.reduce((s,k)=>s+(isPend(c.procs[k])?1:0),0);
+    const total = res + pend;
+    return {n:c.n, res, pend, total};
+  }).sort((a,b)=>b.total-a.total);
+
+  const maxTotal = Math.max(...rows.map(r=>r.total), 1);
+
+  container.innerHTML = rows.map(r=>{
+    const pctRes = r.total>0 ? Math.round(r.res/r.total*100) : 0;
+    const pctPend = r.total>0 ? Math.round(r.pend/r.total*100) : 0;
+    const barRes = Math.round(r.res/maxTotal*100);
+    const barPend = Math.round(r.pend/maxTotal*100);
+    return `
+    <div style="margin-bottom:14px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">
+        <span style="font-size:13px;font-weight:500;color:#1a1a19">${r.n}</span>
+        <div style="display:flex;gap:10px;font-size:12px">
+          <span style="color:#0F6E56">✓ ${r.res} resueltas</span>
+          <span style="color:#A32D2D">● ${r.pend} pendientes</span>
+          <span style="color:#888;font-weight:500">${r.total} total</span>
+        </div>
+      </div>
+      <div style="display:flex;gap:3px;align-items:center">
+        <div style="flex:1;background:#f0f0ee;border-radius:4px;overflow:hidden;height:10px;display:flex">
+          <div style="width:${barRes}%;background:#5DCAA5;height:100%;border-radius:4px 0 0 4px;transition:width .4s"></div>
+          <div style="width:${barPend}%;background:#F09595;height:100%;border-radius:${barRes===0?'4px':'0'} 4px 4px ${barRes===0?'4px':'0'};transition:width .4s"></div>
+        </div>
+        <span style="font-size:11px;color:#888;margin-left:8px;min-width:32px;text-align:right">${pctRes>0?pctRes+'%':''}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:#aaa;margin-top:3px">
+        <span>${pctRes}% resuelto</span>
+        <span>${pctPend}% pendiente</span>
+      </div>
+    </div>`;
+  }).join('');
 }
 
 // Cargar CSV desde Google Sheets
