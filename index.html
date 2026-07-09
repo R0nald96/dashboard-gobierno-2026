@@ -423,62 +423,70 @@ function buildObsChart(){
   const container = document.getElementById('obsProgressTable');
   if(!container) return;
 
-  const rows = CLIENTES.map(c=>{
-    const res = PROC_KEYS.reduce((s,k)=>s+(isRes(c.procs[k])?1:0),0);
+  const data = CLIENTES.map(c=>{
+    const res  = PROC_KEYS.reduce((s,k)=>s+(isRes(c.procs[k])?1:0),0);
     const pend = PROC_KEYS.reduce((s,k)=>s+(isPend(c.procs[k])?1:0),0);
-    const total = res + pend;
-    return {n:c.n, res, pend, total};
+    return {n:c.n, procs:c.procs, res, pend, total:res+pend};
   }).sort((a,b)=>b.total-a.total);
 
-  const maxTotal = Math.max(...rows.map(r=>r.total), 1);
+  const maxTotal = Math.max(...data.map(r=>r.total),1);
 
-  container.innerHTML = rows.map(r=>{
-    const pctRes = r.total>0 ? Math.round(r.res/r.total*100) : 0;
+  let html = '';
+  data.forEach(r=>{
+    const pctRes  = r.total>0 ? Math.round(r.res/r.total*100)  : 0;
     const pctPend = r.total>0 ? Math.round(r.pend/r.total*100) : 0;
-    const barRes = Math.round(r.res/maxTotal*100);
+    const barRes  = Math.round(r.res/maxTotal*100);
     const barPend = Math.round(r.pend/maxTotal*100);
-    // Badges de gestiones con observación
-    const badges = PROC_KEYS.map((k,i)=>{
-      const v = c.procs[k];
-      if(!v || v==='A' || v==='Audit.') return '';
+
+    let badges = '';
+    PROC_KEYS.forEach((k,i)=>{
+      const v = r.procs[k];
+      if(!v || v==='A' || v==='Audit.') return;
       const eq = equipo(v);
       const isP = isPend(v);
-      const bg = isP ? '#FCEBEB' : '#E1F5EE';
+      const bg    = isP ? '#FCEBEB' : '#E1F5EE';
       const color = isP ? '#A32D2D' : '#0F6E56';
-      const icon = isP ? '●' : '✓';
-      return \`<span style="font-size:11px;background:\${bg};color:\${color};padding:2px 8px;border-radius:12px;white-space:nowrap">\${icon} \${PROC_LABEL[i]} · \${eq}</span>\`;
-    }).filter(Boolean).join('');
+      const icon  = isP ? '&#9679;' : '&#10003;';
+      badges += '<span style="font-size:11px;background:'+bg+';color:'+color+';padding:2px 8px;border-radius:12px;white-space:nowrap">'+icon+' '+PROC_LABEL[i]+' &middot; '+eq+'</span>';
+    });
 
-    return \`
-    <div style="margin-bottom:16px;padding-bottom:16px;border-bottom:.5px solid rgba(0,0,0,.08)">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">
-        <span style="font-size:13px;font-weight:500;color:#1a1a19">\${r.n}</span>
-        <div style="display:flex;gap:10px;font-size:12px">
-          <span style="color:#0F6E56">✓ \${r.res} resueltas</span>
-          <span style="color:#A32D2D">● \${r.pend} pendientes</span>
-          <span style="color:#888;font-weight:500">\${r.total} total</span>
-        </div>
-      </div>
-      <div style="display:flex;gap:3px;align-items:center;margin-bottom:6px">
-        <div style="flex:1;background:#f0f0ee;border-radius:4px;overflow:hidden;height:10px;display:flex">
-          <div style="width:\${barRes}%;background:#5DCAA5;height:100%;border-radius:4px 0 0 4px;transition:width .4s"></div>
-          <div style="width:\${barPend}%;background:#F09595;height:100%;border-radius:\${barRes===0?'4px':'0'} 4px 4px \${barRes===0?'4px':'0'};transition:width .4s"></div>
-        </div>
-        <span style="font-size:11px;color:#888;margin-left:8px;min-width:32px;text-align:right">\${pctRes>0?pctRes+'%':''}</span>
-      </div>
-      <div style="display:flex;justify-content:space-between;font-size:11px;color:#aaa;margin-bottom:\${badges?'8px':'0'}">
-        <span>\${pctRes}% resuelto</span>
-        <span>\${pctPend}% pendiente</span>
-      </div>
-      \${badges ? \`<div style="display:flex;flex-wrap:wrap;gap:6px">\${badges}</div>\` : ''}
-    </div>\`;
-  }).join('');
+    html += '<div style="margin-bottom:16px;padding-bottom:16px;border-bottom:.5px solid rgba(0,0,0,.08)">';
+    html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">';
+    html += '<span style="font-size:13px;font-weight:500;color:#1a1a19">'+r.n+'</span>';
+    html += '<div style="display:flex;gap:10px;font-size:12px">';
+    html += '<span style="color:#0F6E56">&#10003; '+r.res+' resueltas</span>';
+    html += '<span style="color:#A32D2D">&#9679; '+r.pend+' pendientes</span>';
+    html += '<span style="color:#888;font-weight:500">'+r.total+' total</span>';
+    html += '</div></div>';
+    html += '<div style="display:flex;gap:3px;align-items:center;margin-bottom:4px">';
+    html += '<div style="flex:1;background:#f0f0ee;border-radius:4px;overflow:hidden;height:10px;display:flex">';
+    html += '<div style="width:'+barRes+'%;background:#5DCAA5;height:100%;border-radius:4px 0 0 4px"></div>';
+    html += '<div style="width:'+barPend+'%;background:#F09595;height:100%;border-radius:'+(barRes===0?'4px':'0')+' 4px 4px '+(barRes===0?'4px':'0')+'"></div>';
+    html += '</div>';
+    html += '<span style="font-size:11px;color:#888;margin-left:8px;min-width:32px;text-align:right">'+(pctRes>0?pctRes+'%':'')+'</span>';
+    html += '</div>';
+    html += '<div style="display:flex;justify-content:space-between;font-size:11px;color:#aaa;margin-bottom:'+(badges?'8px':'0')+'">';
+    html += '<span>'+pctRes+'% resuelto</span><span>'+pctPend+'% pendiente</span></div>';
+    if(badges) html += '<div style="display:flex;flex-wrap:wrap;gap:6px">'+badges+'</div>';
+    html += '</div>';
+  });
+
+  container.innerHTML = html;
 }
 
 // Cargar CSV desde Google Sheets
+const fetchTimeout = setTimeout(()=>{
+  document.getElementById('loadingState').innerHTML=`
+    <div style="color:#A32D2D;font-size:14px">
+      ⚠️ Tiempo de espera agotado.<br>
+      <span style="font-size:12px;color:#888">Verifica tu conexión a internet y recarga con Ctrl+Shift+R</span>
+    </div>`;
+}, 10000);
+
 fetch(CSV_URL)
   .then(r=>r.text())
   .then(text=>{
+    clearTimeout(fetchTimeout);
     const rows = parseCSV(text);
     CLIENTES = buildClientes(rows);
     document.getElementById('loadingState').style.display='none';
@@ -490,6 +498,7 @@ fetch(CSV_URL)
     showTab(document.querySelector('.tab-btn.act'),'2024');
   })
   .catch(err=>{
+    clearTimeout(fetchTimeout);
     document.getElementById('loadingState').innerHTML=`
       <div style="color:#A32D2D;font-size:14px">
         ⚠️ No se pudo cargar la data desde Google Sheets.<br>
