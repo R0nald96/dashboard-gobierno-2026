@@ -437,28 +437,41 @@ function buildObsChart(){
     const pctPend = r.total>0 ? Math.round(r.pend/r.total*100) : 0;
     const barRes = Math.round(r.res/maxTotal*100);
     const barPend = Math.round(r.pend/maxTotal*100);
-    return `
-    <div style="margin-bottom:14px">
+    // Badges de gestiones con observación
+    const badges = PROC_KEYS.map((k,i)=>{
+      const v = c.procs[k];
+      if(!v || v==='A' || v==='Audit.') return '';
+      const eq = equipo(v);
+      const isP = isPend(v);
+      const bg = isP ? '#FCEBEB' : '#E1F5EE';
+      const color = isP ? '#A32D2D' : '#0F6E56';
+      const icon = isP ? '●' : '✓';
+      return \`<span style="font-size:11px;background:\${bg};color:\${color};padding:2px 8px;border-radius:12px;white-space:nowrap">\${icon} \${PROC_LABEL[i]} · \${eq}</span>\`;
+    }).filter(Boolean).join('');
+
+    return \`
+    <div style="margin-bottom:16px;padding-bottom:16px;border-bottom:.5px solid rgba(0,0,0,.08)">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">
-        <span style="font-size:13px;font-weight:500;color:#1a1a19">${r.n}</span>
+        <span style="font-size:13px;font-weight:500;color:#1a1a19">\${r.n}</span>
         <div style="display:flex;gap:10px;font-size:12px">
-          <span style="color:#0F6E56">✓ ${r.res} resueltas</span>
-          <span style="color:#A32D2D">● ${r.pend} pendientes</span>
-          <span style="color:#888;font-weight:500">${r.total} total</span>
+          <span style="color:#0F6E56">✓ \${r.res} resueltas</span>
+          <span style="color:#A32D2D">● \${r.pend} pendientes</span>
+          <span style="color:#888;font-weight:500">\${r.total} total</span>
         </div>
       </div>
-      <div style="display:flex;gap:3px;align-items:center">
+      <div style="display:flex;gap:3px;align-items:center;margin-bottom:6px">
         <div style="flex:1;background:#f0f0ee;border-radius:4px;overflow:hidden;height:10px;display:flex">
-          <div style="width:${barRes}%;background:#5DCAA5;height:100%;border-radius:4px 0 0 4px;transition:width .4s"></div>
-          <div style="width:${barPend}%;background:#F09595;height:100%;border-radius:${barRes===0?'4px':'0'} 4px 4px ${barRes===0?'4px':'0'};transition:width .4s"></div>
+          <div style="width:\${barRes}%;background:#5DCAA5;height:100%;border-radius:4px 0 0 4px;transition:width .4s"></div>
+          <div style="width:\${barPend}%;background:#F09595;height:100%;border-radius:\${barRes===0?'4px':'0'} 4px 4px \${barRes===0?'4px':'0'};transition:width .4s"></div>
         </div>
-        <span style="font-size:11px;color:#888;margin-left:8px;min-width:32px;text-align:right">${pctRes>0?pctRes+'%':''}</span>
+        <span style="font-size:11px;color:#888;margin-left:8px;min-width:32px;text-align:right">\${pctRes>0?pctRes+'%':''}</span>
       </div>
-      <div style="display:flex;justify-content:space-between;font-size:11px;color:#aaa;margin-top:3px">
-        <span>${pctRes}% resuelto</span>
-        <span>${pctPend}% pendiente</span>
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:#aaa;margin-bottom:\${badges?'8px':'0'}">
+        <span>\${pctRes}% resuelto</span>
+        <span>\${pctPend}% pendiente</span>
       </div>
-    </div>`;
+      \${badges ? \`<div style="display:flex;flex-wrap:wrap;gap:6px">\${badges}</div>\` : ''}
+    </div>\`;
   }).join('');
 }
 
